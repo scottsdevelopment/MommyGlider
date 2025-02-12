@@ -54,6 +54,8 @@ private:
     static int lua_SpellStopCasting(lua_State* L);
     static int lua_IsSpellKnown(lua_State* L);
     static int lua_IsSpellInRange(lua_State* L);
+    static int lua_JumpOrAscendStart(lua_State* L);
+    static int lua_MoveForwardStart(lua_State* L);
 public:
     LuaEngine(Memory& mem, Controller& ctrl);
     ~LuaEngine();
@@ -95,12 +97,24 @@ LuaEngine::LuaEngine(Memory& mem, Controller& ctrl) : memory(mem), controller(ct
     lua_register(luaState, "SpellStopCasting", lua_SpellStopCasting);
     lua_register(luaState, "IsSpellKnown", lua_IsSpellKnown); // Breaks signature
     lua_register(luaState, "IsSpellInRange", lua_IsSpellInRange);
+    lua_register(luaState, "JumpOrAscendStart", lua_JumpOrAscendStart);
+    lua_register(luaState, "MoveForwardStart", lua_MoveForwardStart);
     std::cout << "Lua engine initialized.\n";
 }
 
 // LuaEngine destructor
 LuaEngine::~LuaEngine() {
     lua_close(luaState);
+}
+
+int LuaEngine::lua_JumpOrAscendStart(lua_State* L) {
+    instance->controller.pressKey(VK_SPACE);
+    return 1;
+}
+
+int LuaEngine::lua_MoveForwardStart(lua_State* L) {
+    instance->controller.pressKey(VK_NUMLOCK);
+    return 1;
 }
 
 int LuaEngine::lua_GetMoney(lua_State* L) {

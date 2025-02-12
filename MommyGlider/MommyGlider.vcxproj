@@ -187,8 +187,12 @@
     <None Include="Interface\AddOns\Blizzard_TimerunningCharacterCreate\Blizzard_TimerunningCharacterCreate.lua" />
     <None Include="Interface\AddOns\Blizzard_TimerunningCharacterCreate\Blizzard_TimerunningCharacterCreate.toc" />
     <None Include="Interface\AddOns\Blizzard_TimerunningCharacterCreate\Localization.lua" />
-    <None Include="Interface\aura.lua" />
-    <None Include="Interface\main.lua" />
+    <CopyFileToFolders Include="Interface\aura.lua">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Interface\main.lua">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
     <None Include="LICENSE" />
     <None Include="scripts\core_rotations.lua" />
     <None Include="scripts\main.lua" />
