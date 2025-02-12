@@ -20,7 +20,7 @@ private:
     HWND gameWindow; // Handle to the WoW game window
 
     HWND findGameWindow();                      // Helper to find the WoW game window
-    void simulateKeyPress(WORD key) const;      // Simulate a keyboard key press
+    void simulateKeyPress(WORD key, bool useBackgroundInjection) const;      // Simulate a keyboard key press
     void simulateMouseClick(DWORD button) const; // Simulate a mouse click
     void simulateMouseMovement(int x, int y) const; // Simulate mouse movement
 

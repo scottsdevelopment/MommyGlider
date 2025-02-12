@@ -12,10 +12,10 @@ int main() {
         2560,   // screenWidth
         1440,   // screenHeight
         1,   // scale
-        35,     // refX
+        36,     // refX
         79.5,     // refY
-        2,      // pixelSize
-        3       // spacing
+        1,      // pixelSize
+        1       // spacing
     };
 
     // Initialize Memory
@@ -27,9 +27,8 @@ int main() {
     // Initialize LuaEngine
     LuaEngine luaEngine(memory, controller);
 
-    std::cout << "Starting Lua scripts.\n";
-    luaEngine.executeScript("Interface/aura.lua"); // Execute the main Lua script
-    luaEngine.executeScript("Interface/main.lua"); // Execute the main Lua script
-
+    std::cout << "Starting Lua engine.\n";
+    //luaEngine.loadAddons("Interface/Addons/");
+    luaEngine.executeScript("Interface/main.lua");
     return 0;
 }

@@ -120,7 +120,7 @@ void Memory::captureOffsets() {
     HDC hdc = GetDC(NULL);
     RECT boundingBox = calculateBoundingBox();
 
-    int width = boundingBox.right - boundingBox.left - 1;
+    int width = boundingBox.right - boundingBox.left;
     int height = calibration.pixelSize;
 
     auto [spacing, _] = translateToMonitorCoords(calibration.spacing, 0, calibration);
@@ -135,7 +135,7 @@ void Memory::captureOffsets() {
             if (stopThread) break;
 
             // Copy the screen region to memory
-            BOOL result = BitBlt(memDC, 0, 0, width, height, hdc, boundingBox.left + 1, boundingBox.top, SRCCOPY);
+            BOOL result = BitBlt(memDC, 0, 0, width, height, hdc, boundingBox.left, boundingBox.top, SRCCOPY);
             if (!result) {
                 std::cerr << "Error: BitBlt failed. Check coordinates and device contexts." << std::endl;
                 continue;

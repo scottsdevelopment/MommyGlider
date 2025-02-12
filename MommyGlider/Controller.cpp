@@ -46,53 +46,73 @@ Controller::Controller() : gameWindow(findGameWindow()) {}
 #include <random>
 #include <thread>
 
-void Controller::simulateKeyPress(WORD key) const {
+void Controller::simulateKeyPress(WORD key, bool useBackgroundInjection = true) const {
     if (!gameWindow) {
-        std::cerr << "Error: gameWindow is null. Cannot simulate key press.\n";
+        std::cerr << "[ERROR] gameWindow is null. Cannot simulate key press.\n";
         return;
     }
 
-    // Bring the game window to the foreground
-    //if (!SetForegroundWindow(gameWindow)) {
-    //    std::cerr << "Failed to set the game window to the foreground.\n";
-    //    return;
-    //}
+    if (useBackgroundInjection) {
+        // Use PostMessage for background key injection
+        LPARAM lParam = (MapVirtualKey(key, MAPVK_VK_TO_VSC) << 16) | 1; // Build LPARAM with scan code and repeat count
 
-    int minDelayMs = 50;
-    int maxDelayMs = 150;
+        if (!PostMessage(gameWindow, WM_KEYDOWN, key, lParam)) {
+            std::cerr << "[ERROR] Failed to send WM_KEYDOWN for key: " << key << "\n";
+            return;
+        }
 
-    std::cout << "Game window successfully set to the foreground.\n";
+        while ((GetAsyncKeyState(VK_CAPITAL) & 0x8000) != 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Maintain realistic key press hold
+        }
 
-    // Random delay generator
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> dist(minDelayMs, maxDelayMs);
-    int delayMs = dist(rng);
+        lParam |= 1 << 31; // Set the transition state to key-up
+        if (!PostMessage(gameWindow, WM_KEYUP, key, lParam)) {
+            std::cerr << "[ERROR] Failed to send WM_KEYUP for key: " << key << "\n";
+        }
 
-    // Simulate key press using PostMessage
-    LPARAM lParam = (MapVirtualKey(key, MAPVK_VK_TO_VSC) << 16) | 1; // Build LPARAM with scan code and repeat count
-
-    // Send WM_KEYDOWN message
-    if (!PostMessage(gameWindow, WM_KEYDOWN, key, lParam)) {
-        std::cerr << "Failed to send WM_KEYDOWN message for key: " << key << "\n";
+        // Uncomment the following section if you want to experiment with NtUserSendInput (requires NtDll linking)
+        /*
+        typedef NTSTATUS(WINAPI * NtUserSendInput_t)(UINT, LPINPUT, INT);
+        HMODULE hNtDll = LoadLibraryA("ntdll.dll");
+        if (hNtDll) {
+            NtUserSendInput_t NtUserSendInput = (NtUserSendInput_t)GetProcAddress(hNtDll, "NtUserSendInput");
+            if (NtUserSendInput) {
+                INPUT input = {};
+                input.type = INPUT_KEYBOARD;
+                input.ki.wVk = key;
+                input.ki.dwFlags = 0; // Key down
+                NtUserSendInput(1, &input, sizeof(INPUT));
+                input.ki.dwFlags = KEYEVENTF_KEYUP;
+                NtUserSendInput(1, &input, sizeof(INPUT));
+            }
+            FreeLibrary(hNtDll);
+        }
+        */
     }
     else {
-        std::cout << "WM_KEYDOWN message sent successfully for key: " << key << "\n";
-    }
+        // Use SendInput for regular key simulation
+        INPUT input = {};
+        input.type = INPUT_KEYBOARD;
+        input.ki.wVk = key;
+        input.ki.dwFlags = 0; // Key down
 
-    // Random delay to simulate key hold duration
-    std::cout << "Holding key for " << delayMs << " milliseconds.\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(delayMs));
+        if (SendInput(1, &input, sizeof(INPUT)) == 0) {
+            std::cerr << "[ERROR] Failed to send WM_KEYDOWN for key: " << key << "\n";
+            return;
+        }
 
-    // Send WM_KEYUP message
-    lParam |= 1 << 31; // Set the transition state to key-up
-    if (!PostMessage(gameWindow, WM_KEYUP, key, lParam)) {
-        std::cerr << "Failed to send WM_KEYUP message for key: " << key << "\n";
-    }
-    else {
-        std::cout << "WM_KEYUP message sent successfully for key: " << key << "\n";
+        while ((GetAsyncKeyState(VK_CAPITAL) & 0x8000) != 0) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Simulate actual key press hold duration
+        }
+
+        input.ki.dwFlags = KEYEVENTF_KEYUP; // Key up
+        if (SendInput(1, &input, sizeof(INPUT)) == 0) {
+            std::cerr << "[ERROR] Failed to send WM_KEYUP for key: " << key << "\n";
+        }
     }
 }
+
+
 
 
 
